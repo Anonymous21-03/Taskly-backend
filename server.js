@@ -14,7 +14,8 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      'https://anonymous21-03.github.io'
+      'https://anonymous21-03.github.io',
+      'https://anonymous21-03.github.io/Taskly-frontend'  // Add this
     ],
     credentials: true
   })
