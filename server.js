@@ -4,15 +4,21 @@ const connectDB = require('./config/db')
 const userRoutes = require('./routes/userRoutes')
 const taskRoutes = require('./routes/taskRoutes')
 const cors = require('cors')
-app.use(
-  cors({
-    origin: ['http://localhost:3000', 'https://anonymous21-03.github.io/Taskly-frontend/']
-  })
-)
 
 dotenv.config()
 
 const app = express()
+
+// Updated CORS configuration
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3000',
+      'https://anonymous21-03.github.io'
+    ],
+    credentials: true
+  })
+)
 
 app.use(express.json())
 
