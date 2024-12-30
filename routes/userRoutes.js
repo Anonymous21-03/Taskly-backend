@@ -83,14 +83,17 @@ router.get("/dashboard", protect, async (req, res) => {
     const pendingTasksData = await Task.find({ user: req.user, status: 'pending' });
     const completedTasksData = await Task.find({ user: req.user, status: 'completed' });
 
+    // Calculate average completion time for completed tasks
     const averageCompletionTime = completedTasksData.length > 0 
       ? completedTasksData.reduce((acc, task) => {
           const startTime = new Date(task.startTime);
           const endTime = new Date(task.endTime);
-          return acc + (endTime - startTime) / (1000 * 60 * 60);
+          const completionTime = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
+          return acc + completionTime;
         }, 0) / completedTasksData.length
       : 0;
 
+    // Calculate time stats for pending tasks by priority
     const timeStats = [1, 2, 3, 4, 5].map(priority => {
       const tasksWithPriority = pendingTasksData.filter(task => task.priority === priority);
       
@@ -98,11 +101,20 @@ router.get("/dashboard", protect, async (req, res) => {
         const startTime = new Date(task.startTime);
         const endTime = new Date(task.endTime);
         
-        const timeLapsed = Math.max(0, (currentTime - startTime) / (1000 * 60 * 60));
-        const balanceTime = Math.max(0, (endTime - currentTime) / (1000 * 60 * 60));
-        
+        // Calculate time lapsed
+        let timeLapsed = 0;
+        if (currentTime > startTime) {
+          timeLapsed = (currentTime - startTime) / (1000 * 60 * 60);
+        }
+
+        // Calculate balance time
+        let balanceTime = 0;
+        if (currentTime < endTime) {
+          balanceTime = (endTime - currentTime) / (1000 * 60 * 60);
+        }
+
         return {
-          timeLapsed: acc.timeLapsed + (currentTime > startTime ? timeLapsed : 0),
+          timeLapsed: acc.timeLapsed + timeLapsed,
           balanceTime: acc.balanceTime + balanceTime
         };
       }, { timeLapsed: 0, balanceTime: 0 });
@@ -132,5 +144,6 @@ router.get("/dashboard", protect, async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
+
 
 module.exports = router
